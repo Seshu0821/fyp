@@ -78,13 +78,11 @@ def load_model():
 
     print("Model loaded successfully")
 
-
 @app.post("/predict")
 def predict(data: PredictionInput):
 
     input_data = data.model_dump()
 
-    # create dataframe
     input_df = pd.DataFrame([input_data])
 
     input_processed = preprocessor.transform(input_df)
@@ -117,8 +115,10 @@ def predict(data: PredictionInput):
         clean_name = name.split("__")[-1]
         contributions[clean_name] = float(val)
 
-    # Filter only important features
+    # Important features
     filtered_contributions = {}
+
+    other_contribution = 0
 
     for key, value in contributions.items():
 
@@ -130,6 +130,12 @@ def predict(data: PredictionInput):
 
         elif "test_preparation_course" in key:
             filtered_contributions["test_preparation_course"] = value
+
+        else:
+            other_contribution += value
+
+    # add remaining features
+    filtered_contributions["other_factors"] = other_contribution
 
     return {
         "predicted_math_score": round(score, 2),
