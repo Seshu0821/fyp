@@ -20,7 +20,6 @@ class PredictionInput(BaseModel):
 
 app = FastAPI()
 
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -67,7 +66,6 @@ def load_model():
     model = LinearRegression()
     model.fit(X_transformed, y)
 
-    # SHAP explainer
     explainer = shap.LinearExplainer(model, X_transformed)
 
     feature_names = preprocessor.get_feature_names_out()
@@ -110,22 +108,25 @@ def predict(data: PredictionInput):
         clean_name = name.split("__")[-1]
         contributions[clean_name] = float(val)
 
-    # Important features for UI
-    important_features = [
-        "reading_score",
-        "writing_score",
-        "test_preparation_course"
-    ]
+    # Clean output for UI
+    filtered_contributions = {}
 
-    filtered_contributions = {
-        k: v for k, v in contributions.items()
-        if any(feature in k for feature in important_features)
-    }
+    for key, value in contributions.items():
+
+        if "reading_score" in key:
+            filtered_contributions["reading_score"] = value
+
+        elif "writing_score" in key:
+            filtered_contributions["writing_score"] = value
+
+        elif "test_preparation_course_" in key:
+            if data.test_preparation_course in key:
+                filtered_contributions["test_preparation_course"] = value
+
 
     return {
-        "predicted_math_score": score,
+        "predicted_math_score": round(score, 2),
         "status": status,
         "performance_level": performance,
         "feature_contributions": filtered_contributions
     }
-
