@@ -1,9 +1,11 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 from pydantic import BaseModel
+
 
 class PredictionInput(BaseModel):
     gender: str
@@ -16,6 +18,15 @@ class PredictionInput(BaseModel):
 
 
 app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"],  
+)
 
 model = None
 preprocessor = None
